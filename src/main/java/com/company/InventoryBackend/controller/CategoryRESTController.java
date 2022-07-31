@@ -4,9 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.company.InventoryBackend.model.Category;
 import com.company.InventoryBackend.response.CategoryResponseREST;
 import com.company.InventoryBackend.service.ICategoryService;
 
@@ -29,7 +32,7 @@ public class CategoryRESTController {
 	}
 	
 	/**
-	 * Gets categories by id
+	 * Gets categories by id.
 	 * @param id
 	 * @return
 	 */
@@ -37,6 +40,18 @@ public class CategoryRESTController {
 	public ResponseEntity<CategoryResponseREST> searchCategoriesById(@PathVariable Long id){
 		
 		ResponseEntity<CategoryResponseREST> response = service.searchById(id);
+		return response;
+	}
+	
+	/**
+	 * Saves categories.
+	 * @param category
+	 * @return
+	 */
+	@PostMapping("/categories")
+	public ResponseEntity<CategoryResponseREST> save(@RequestBody Category category){
+		
+		ResponseEntity<CategoryResponseREST> response = service.save(category);
 		return response;
 	}
 
