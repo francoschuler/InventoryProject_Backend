@@ -6,6 +6,4 @@ import com.company.InventoryBackend.model.Category;
 
 public interface ICategoryDAO extends CrudRepository<Category, Long>{
 	
-	
-
 }
