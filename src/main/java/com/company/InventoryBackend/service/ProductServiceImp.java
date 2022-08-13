@@ -7,12 +7,14 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.company.InventoryBackend.dao.ICategoryDAO;
 import com.company.InventoryBackend.dao.IProductDAO;
 import com.company.InventoryBackend.model.Category;
 import com.company.InventoryBackend.model.Product;
 import com.company.InventoryBackend.response.ProductResponseREST;
+import com.company.InventoryBackend.util.Util;
 
 @Service
 public class ProductServiceImp implements IProductService {
@@ -27,6 +29,7 @@ public class ProductServiceImp implements IProductService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntity<ProductResponseREST> save(Product product, Long categoryId) {
 		
 		ProductResponseREST response = new ProductResponseREST();
@@ -64,6 +67,39 @@ public class ProductServiceImp implements IProductService {
 		
 		return new ResponseEntity<ProductResponseREST>(response, HttpStatus.OK);
 		
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntity<ProductResponseREST> searchById(Long id) {
+		
+		ProductResponseREST response = new ProductResponseREST();
+		List<Product> list = new ArrayList<>();
+		
+		try {
+			
+			// Search product by id
+			Optional<Product> product = productDAO.findById(id);
+			if(product.isPresent()) {
+				
+				byte imagenDecompressed[] = Util.decompressZLib(product.get().getPicture());
+				product.get().setPicture(imagenDecompressed);
+				list.add(product.get());
+				response.getProduct().setProducts(list);
+				response.setMetadata("Respuesta OK", "00", "Producto encontrado.");
+				
+			}else {
+				response.setMetadata("ERROR", "-1", "Producto con el id " + id + " no encontrado.");
+				return new ResponseEntity<ProductResponseREST>(response, HttpStatus.NOT_FOUND);
+			}
+			
+		}catch (Exception e) {
+			e.getStackTrace();
+			response.setMetadata("ERROR", "-1", "Error al guardar producto");
+			return new ResponseEntity<ProductResponseREST>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		return new ResponseEntity<ProductResponseREST>(response, HttpStatus.OK);
 	}
 	
 }
