@@ -197,5 +197,57 @@ public class ProductServiceImp implements IProductService {
 		
 		return new ResponseEntity<ProductResponseREST>(response, HttpStatus.OK);
 	}
+
+	@Override
+	@Transactional
+	public ResponseEntity<ProductResponseREST> update(Product product, Long categoryId, Long id) {
+		ProductResponseREST response = new ProductResponseREST();
+		List<Product> list = new ArrayList<>();
+		
+		try {
+			
+			// Search category by id
+			Optional<Category> category = categoryDAO.findById(categoryId);
+			if(category.isPresent()) {
+				product.setCategory(category.get());
+			}else {
+				response.setMetadata("ERROR", "-1", "Categoria no encontrada.");
+				return new ResponseEntity<ProductResponseREST>(response, HttpStatus.NOT_FOUND);
+			}
+			
+			// Search product to update
+			Optional<Product> productSearch = productDAO.findById(id);
+			if (productSearch.isPresent()) {
+				
+				// Update product
+				productSearch.get().setName(product.getName());
+				productSearch.get().setPrice(product.getPrice());
+				productSearch.get().setAmount(product.getAmount());
+				productSearch.get().setCategory(product.getCategory());
+				productSearch.get().setPicture(product.getPicture());
+				
+				Product productToUpdate = productDAO.save(productSearch.get());
+				
+				if(productToUpdate != null) {
+					list.add(productToUpdate);
+					response.setMetadata("Respuesta OK", "00", "Producto actualizado correctamente");
+				}else {
+					response.setMetadata("ERROR", "-1", "Producto no actualizado.");
+					return new ResponseEntity<ProductResponseREST>(response, HttpStatus.BAD_REQUEST);
+				}
+				
+			}else {
+				response.setMetadata("ERROR", "-1", "Producto no actualizado.");
+				return new ResponseEntity<ProductResponseREST>(response, HttpStatus.NOT_FOUND);
+			}
+			
+		}catch (Exception e) {
+			e.getStackTrace();
+			response.setMetadata("ERROR", "-1", "Error al actualizar producto");
+			return new ResponseEntity<ProductResponseREST>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		return new ResponseEntity<ProductResponseREST>(response, HttpStatus.OK);
+	}
 	
 }
