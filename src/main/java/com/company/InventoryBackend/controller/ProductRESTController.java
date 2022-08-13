@@ -71,5 +71,16 @@ public class ProductRESTController {
 		return response;
 	}
 
+	/**
+	 * Searchs products by name
+	 * @param name
+	 * @return
+	 */
+	@GetMapping("/products/filter/{name}")
+	public ResponseEntity<ProductResponseREST> searchByName(@PathVariable String name) {
+		ResponseEntity<ProductResponseREST> response = productService.searchByName(name);
+		return response;
+	}
+
 	
 }

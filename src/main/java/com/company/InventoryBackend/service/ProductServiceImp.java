@@ -95,7 +95,45 @@ public class ProductServiceImp implements IProductService {
 			
 		}catch (Exception e) {
 			e.getStackTrace();
-			response.setMetadata("ERROR", "-1", "Error al guardar producto");
+			response.setMetadata("ERROR", "-1", "Error al buscar producto");
+			return new ResponseEntity<ProductResponseREST>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		return new ResponseEntity<ProductResponseREST>(response, HttpStatus.OK);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntity<ProductResponseREST> searchByName(String name) {
+		
+		ProductResponseREST response = new ProductResponseREST();
+		List<Product> list = new ArrayList<>();
+		List<Product> listAux = new ArrayList<>();
+		
+		try {
+			
+			// Search product by name
+			listAux = productDAO.findByNameContainingIgnoreCase(name);
+			if(listAux.size() > 0) {
+				
+				listAux.stream().forEach((p)->  {
+					byte imagenDecompressed[] = Util.decompressZLib(p.getPicture());
+					p.setPicture(imagenDecompressed);
+					list.add(p);
+				});
+				
+				
+				response.getProduct().setProducts(list);
+				response.setMetadata("Respuesta OK", "00", "Producto(s) encontrado(s).");
+				
+			}else {
+				response.setMetadata("ERROR", "-1", "Producto(s) con el id no encontrados.");
+				return new ResponseEntity<ProductResponseREST>(response, HttpStatus.NOT_FOUND);
+			}
+			
+		}catch (Exception e) {
+			e.getStackTrace();
+			response.setMetadata("ERROR", "-1", "Error al buscar producto(s)");
 			return new ResponseEntity<ProductResponseREST>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
