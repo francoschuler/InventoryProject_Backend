@@ -116,7 +116,7 @@ public class ProductServiceImp implements IProductService {
 			listAux = productDAO.findByNameContainingIgnoreCase(name);
 			if(listAux.size() > 0) {
 				
-				listAux.stream().forEach((p)->  {
+				listAux.stream().forEach( (p)->  {
 					byte imagenDecompressed[] = Util.decompressZLib(p.getPicture());
 					p.setPicture(imagenDecompressed);
 					list.add(p);
@@ -127,7 +127,7 @@ public class ProductServiceImp implements IProductService {
 				response.setMetadata("Respuesta OK", "00", "Producto(s) encontrado(s).");
 				
 			}else {
-				response.setMetadata("ERROR", "-1", "Producto(s) con el id no encontrados.");
+				response.setMetadata("ERROR", "-1", "Producto(s) no encontrados.");
 				return new ResponseEntity<ProductResponseREST>(response, HttpStatus.NOT_FOUND);
 			}
 			
@@ -155,6 +155,43 @@ public class ProductServiceImp implements IProductService {
 		}catch (Exception e) {
 			e.getStackTrace();
 			response.setMetadata("ERROR", "-1", "Error al eliminar producto");
+			return new ResponseEntity<ProductResponseREST>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		return new ResponseEntity<ProductResponseREST>(response, HttpStatus.OK);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntity<ProductResponseREST> search() {
+		ProductResponseREST response = new ProductResponseREST();
+		List<Product> list = new ArrayList<>();
+		List<Product> listAux = new ArrayList<>();
+		
+		try {
+			
+			// Search all products
+			listAux = (List<Product>) productDAO.findAll();
+			if(listAux.size() > 0) {
+				
+				listAux.stream().forEach( (p)->  {
+					byte imagenDecompressed[] = Util.decompressZLib(p.getPicture());
+					p.setPicture(imagenDecompressed);
+					list.add(p);
+				});
+				
+				
+				response.getProduct().setProducts(list);
+				response.setMetadata("Respuesta OK", "00", "Producto(s) encontrado(s).");
+				
+			}else {
+				response.setMetadata("ERROR", "-1", "Producto(s) no encontrados.");
+				return new ResponseEntity<ProductResponseREST>(response, HttpStatus.NOT_FOUND);
+			}
+			
+		}catch (Exception e) {
+			e.getStackTrace();
+			response.setMetadata("ERROR", "-1", "Error al buscar producto(s)");
 			return new ResponseEntity<ProductResponseREST>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
