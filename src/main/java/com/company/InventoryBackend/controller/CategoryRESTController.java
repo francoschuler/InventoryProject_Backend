@@ -1,5 +1,9 @@
 package com.company.InventoryBackend.controller;
 
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.company.InventoryBackend.model.Category;
 import com.company.InventoryBackend.response.CategoryResponseREST;
 import com.company.InventoryBackend.service.ICategoryService;
+import com.company.InventoryBackend.util.CategoryExcelExporter;
 
 //Permite que varias aplicaciones puedan acceder al servicio (en este caso una app en Angular con el puerto 4200)
 @CrossOrigin(origins = {"http://localhost:4200"}) 
@@ -84,6 +89,30 @@ public class CategoryRESTController {
 		
 		ResponseEntity<CategoryResponseREST> response = service.deleteById(id);
 		return response;
+	}
+	
+	/**
+	 * Exports categories to Excel file
+	 * @param response
+	 * @throws IOException
+	 */
+	@GetMapping("/categories/export/excel")
+	public void exportToExcel(HttpServletResponse response) throws IOException {
+		response.setContentType("application/octet-stream");
+		
+		String headerKey = "Content-Disposition";
+		String headerValue = "attachment; filename=result_category";
+		response.setHeader(headerKey, headerValue);
+		
+		ResponseEntity<CategoryResponseREST> categoryResponse = service.search();
+		CategoryExcelExporter excelExporter = new CategoryExcelExporter(categoryResponse
+																		.getBody()
+																		.getCategoryResponse()
+																		.getCategory());
+		excelExporter.export(response);
+		
+		
+		
 	}
 
 }

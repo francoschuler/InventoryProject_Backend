@@ -2,6 +2,8 @@ package com.company.InventoryBackend.controller;
 
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.company.InventoryBackend.model.Product;
 import com.company.InventoryBackend.response.ProductResponseREST;
 import com.company.InventoryBackend.service.IProductService;
+import com.company.InventoryBackend.util.ProductExcelExporter;
 import com.company.InventoryBackend.util.Util;
 
 @CrossOrigin(origins = {"http://localhost:4200"})
@@ -135,6 +138,30 @@ public class ProductRESTController {
 		
 		ResponseEntity<ProductResponseREST> response = productService.update(product, categoryId, id);
 		return response;
+		
+	}
+	
+	/**
+	 * Exports products to Excel file
+	 * @param response
+	 * @throws IOException
+	 */
+	@GetMapping("/products/export/excel")
+	public void exportToExcel(HttpServletResponse response) throws IOException {
+		response.setContentType("application/octet-stream");
+		
+		String headerKey = "Content-Disposition";
+		String headerValue = "attachment; filename=result_product";
+		response.setHeader(headerKey, headerValue);
+		
+		ResponseEntity<ProductResponseREST> products = productService.search();
+		ProductExcelExporter excelExporter = new ProductExcelExporter(products
+																		.getBody()
+																		.getProduct()
+																		.getProducts());
+		excelExporter.export(response);
+		
+		
 		
 	}
 	
